@@ -24,7 +24,7 @@ jobs:
       # IMPORTANT : On dit à l'APK de regarder votre URL Render
       - name: Configurer l'URL Render
         run: |
-          sed -i 's|"server": {.*}|"server": {"url": "https://votre-app.onrender.com", "cleartext": true}|' capacitor.config.json
+          sed -i 's|"server": {.*}|"server": {"url": "https://apk-test.onrender.com", "cleartext": true}|' capacitor.config.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
