@@ -1,33 +1,44 @@
-name: Build Android APK
-
+name: Build Laon APK
 on:
   push:
-    branches: [ main ] # Se déclenche quand vous poussez sur la branche 'main'
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout le code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configuration de Java (JDK 17)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with: { node-version: 18 }
+
+      - name: Installer Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npx cap init Laon com.laon.app --web-dir .
+          npx cap add android
+
+      # IMPORTANT : On dit à l'APK de regarder votre URL Render
+      - name: Configurer l'URL Render
+        run: |
+          sed -i 's|"server": {.*}|"server": {"url": "https://votre-app.onrender.com", "cleartext": true}|' capacitor.config.json
+
+      - name: Setup Java
         uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+        with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Rendre Gradle exécutable
-        run: chmod +x gradlew
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Build de l'APK (Debug)
-        run: ./gradlew assembleDebug
-
-      - name: Sauvegarder l'APK (Artifact)
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: Laon-App
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           
