@@ -17,15 +17,21 @@ jobs:
 
       - name: Création de l'environnement Capacitor
         run: |
+          # Initialisation propre du projet
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          mkdir www
+          
+          # CRUCIAL : Créer le dossier et le fichier index.html pour éviter l'erreur
+          mkdir -p www
+          echo "<!DOCTYPE html><html><body><h1>Laon Loader</h1></body></html>" > www/index.html
+          
+          # Initialisation de Capacitor
           npx cap init Laon com.laon.app --web-dir www
           npx cap add android
 
       - name: Synchronisation avec Render (Live Update)
         run: |
-          # Cette ligne remplace l'URL locale par ton lien Render officiel
+          # On injecte ton URL Render directement dans la config de l'APK
           sed -i 's|"server": {.*}|"server": {"url": "https://apk-test.onrender.com", "cleartext": true}|' capacitor.config.json
 
       - name: Configuration de Java (JDK 17)
@@ -38,6 +44,8 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
+          # On synchronise les fichiers avant de compiler
+          npx cap copy
           ./gradlew assembleDebug
 
       - name: Livraison de l'APK
